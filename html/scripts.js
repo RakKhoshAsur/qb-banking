@@ -99,6 +99,10 @@ $(document).ready(function(){
       closeAll();
       openDeposit();
     }
+    if(item.openSection == "transfer") {
+      closeAll();
+      openTransfer();
+    }
   });
   // On 'Esc' call close method
   document.onkeyup = function (data) {
@@ -112,6 +116,9 @@ $(document).ready(function(){
   });
   $(".btnDeposit").click(function(){
       $.post('http://banking/deposit', JSON.stringify({}));
+  });
+  $(".btnTransfer").click(function(){
+    $.post('http://banking/transfer', JSON.stringify({}));
   });
   $(".btnBalance").click(function(){
       $.post('http://banking/balance', JSON.stringify({}));
@@ -154,5 +161,21 @@ $(document).ready(function(){
       openMain();
       
       $("#deposit-form #amount").val('')
+  });
+  $("#transfer-form").submit(function(e) {
+    e.preventDefault();
+    var amount = parseInt($("#transfer-form #amount").val());
+    var transferid = parseInt($("#transfer-form #amount").val());
+
+    if (amount >= 0  && transferid >= 0) {
+      $.post('http://banking/transferSubmit', JSON.stringify({
+          amount: $("#transfer-form #amount").val(),
+          transferid : $("#transfer-form #transferid").val()
+      }));
+    }
+    closeAll();
+    openMain();
+    
+    $("#transfer-form #amount").val('')
   });
 });
