@@ -1,4 +1,4 @@
-// Credit to Kanersps @ EssentialMode and Eraknelo @FiveM
+
 function addGaps(nStr) {
   nStr += '';
   var x = nStr.split('.');
@@ -66,22 +66,93 @@ $(document).ready(function(){
     $(".bank-container").fadeOut(250);
   }
 
+
   // Listen for NUI Events
   window.addEventListener('message', function(event){
     var item = event.data;
     // Open & Close main bank window
     if(item.openBank == true) {
-      $('.currentBalance').html('&euro;'+addCommas(item.PlayerData.money.bank));
+      $('.currentBalance').html('&dollar;'+addCommas(item.PlayerData.money.bank));
       $('.username').html(item.PlayerData.charinfo.firstname + " " + item.PlayerData.charinfo.lastname);
       openContainer();
       openMain();
     }
 
     if(item.updateBalance) {
-      $('.currentBalance').html('&euro;'+addCommas(item.PlayerData.money.bank));
+      $('.currentBalance').html('&dollar;'+addCommas(item.PlayerData.money.bank));
       console.log(item.PlayerData.money.bank)
     }
+    if(item.viewBalance == true) {
+      $('.balance').show();
+      $('.cash').show();
+      setTimeout(function(){
+        $('.balance').fadeOut(600)
+        $('.cash').fadeOut(600)
+      }, 8000)
+    }
+    if(item.viewCash == true) {
+      $('.cash').show();
+      setTimeout(function(){
+        $('.cash').fadeOut(600)
+      }, 8000)
+    }
+    if(item.updateCash == true) {
+      $('.cash').hide();
+      if(item.show != false){
+        $('.cash').show();
+      }
+      $('.cash').html('<p id="cash"><span class="green"> $ </span>' +addGaps(event.data.cash)+'</p>');
+      if(item.show != false){
+        setTimeout(function(){
+          $('.cash').fadeOut(600)
+        }, 4000)
+      }
+    }
+    // Trigger Add Balance Popup
+    if(item.addBalance == true) {
+      $('.transaction').show();
+      var element = $('<p id="add-balance"><span class="pre">+</span><span class="green"> $ </span>' +addGaps(event.data.amount)+'</p>');
+      $(".transaction").append(element);
 
+      setTimeout(function(){
+        $(element).fadeOut(600, function() { $(this).remove(); })
+      }, 2000)
+    }
+    //Trigger Remove Balance Popup
+    if(item.removeBalance == true) {
+      $('.transaction').show();
+      var element = $('<p id="add-balance"><span class="pre">-</span><span class="red"> $ </span>' +addGaps(event.data.amount)+'</p>');
+      $(".transaction").append(element);
+      setTimeout(function(){
+        $(element).fadeOut(600, function() { $(this).remove(); })
+      }, 2000)
+    }
+        // Trigger Add Balance Popup
+    if(item.addCash == true) {
+      $('.cashtransaction').show();
+      var element = $('<p id="add-balance"><span class="pre">+</span><span class="green"> $ </span>' +addGaps(event.data.amount)+'</p>');
+      $(".cashtransaction").append(element);
+
+      setTimeout(function(){
+        $(element).fadeOut(600, function() { $(this).remove(); })
+      }, 2000)
+    }
+    //Trigger Remove Balance Popup
+    if(item.removeCash == true) {
+      $('.cashtransaction').show();
+      var element = $('<p id="add-balance"><span class="pre">-</span><span class="red"> $ </span>' +addGaps(event.data.amount)+'</p>');
+      $(".cashtransaction").append(element);
+      setTimeout(function(){
+        $(element).fadeOut(600, function() { $(this).remove(); })
+      }, 2000)
+    }
+    // Open & Close main bank window
+    if(item.openBank == true) {
+      $('.currentBalance').html(addCommas(item.PlayerData.money.bank)+'$');
+      $('.username').html(item.PlayerData.charinfo.firstname + " " + item.PlayerData.charinfo.lastname);
+      openContainer();
+      openMain();
+    }
     if(item.openBank == false) {
       closeContainer();
       closeMain();
@@ -104,6 +175,8 @@ $(document).ready(function(){
       openTransfer();
     }
   });
+
+  
   // On 'Esc' call close method
   document.onkeyup = function (data) {
     if (data.which == 27 ) {
@@ -117,11 +190,14 @@ $(document).ready(function(){
   $(".btnDeposit").click(function(){
       $.post('http://banking/deposit', JSON.stringify({}));
   });
-  $(".btnTransfer").click(function(){
-    $.post('http://banking/transfer', JSON.stringify({}));
-  });
   $(".btnBalance").click(function(){
       $.post('http://banking/balance', JSON.stringify({}));
+  });
+  $('.btnQuick').click($.throttle( 2000, true, function(e){
+    $.post('http://banking/quickCash', JSON.stringify({}));
+  }));
+  $(".btnTransfer").click(function(){
+    $.post('http://banking/transfer', JSON.stringify({}));
   });
   $(".btnClose").click(function(){
       $.post('http://banking/close', JSON.stringify({}));
@@ -164,18 +240,19 @@ $(document).ready(function(){
   });
   $("#transfer-form").submit(function(e) {
     e.preventDefault();
-    var amount = parseInt($("#transfer-form #amount").val());
-    var transferid = parseInt($("#transfer-form #amount").val());
-
-    if (amount >= 0  && transferid >= 0) {
-      $.post('http://banking/transferSubmit', JSON.stringify({
-          amount: $("#transfer-form #amount").val(),
-          transferid : $("#transfer-form #transferid").val()
-      }));
-    }
-    closeAll();
-    openMain();
-    
+    $.post('http://banking/transferSubmit', JSON.stringify({
+        amount: $("#transfer-form #amount").val(),
+        toPlayer: $("#transfer-form #toPlayer").val()
+    }));
+    $("#transfer-form #amount").prop('disabled', true)
+    $("#transfer-form #toPlayer").prop('disabled', true)
+    $("#transfer-form #submit").css('display', 'none')
+    setTimeout(function(){
+      $("#transfer-form #amount").prop('disabled', false)
+      $("#transfer-form #submit").css('display', 'block')
+      $("#transfer-form #toPlayer").prop('disabled', false)
+    }, 2000)
     $("#transfer-form #amount").val('')
-  });
+    $("#transfer-form #toPlayer").val('')
+});
 });

@@ -8,9 +8,11 @@
   position: absolute;
   top: 5px;
   left: 200px;
+  opacity:0.9;
 }
 html {
   overflow: hidden;
+  opacity:0.9;
 }
 @font-face {
   font-family: 'pricedown';
@@ -21,11 +23,9 @@ html {
     z-index: 99999999;
     display: none;
 }
-
 .sans {
   font-family: 'Lato';
 }
-
 h1,h2,h3,h4 {
   margin: 0;
   padding: 0;
@@ -51,8 +51,33 @@ h1,h2,h3,h4 {
   margin-right: 6px;
   padding: 0;
 }
+#cash {
+  float:right;
+  font-family: pricedown;
+  font-weight: 400;
+  font-size: 2rem;
+  color: white;
+  padding: 4px;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  margin: 0;
+  margin-right: 6px;
+  padding: 0;
+}
+#add-balance {
+  float:right;
+  font-family: pricedown;
+  font-weight: 400;
+  font-size: 29px;
+  color: white;
+  padding: 4px;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  margin: 0;
+  margin-right: 6px;
+  margin-top: 6px;
+  padding: 0;
+}
 #icon {
-  height: 15px;
+  height: 21px;
   width: auto;
   margin-right: 10px;
 }
@@ -73,6 +98,11 @@ h1,h2,h3,h4 {
   height: 30px;
   width: 100%;
 }
+.cashtransaction {
+  display: inline-block;
+  height: 30px;
+  width: 100%;
+}
 .transaction {
   display: inline-block;
   height: 30px;
@@ -85,11 +115,11 @@ h1,h2,h3,h4 {
   align-items: center;
 }
 .bank-container {
-  width: 50%;
-  height: 50vh;
+  width: 70%;
+  height: 700px;
   background-color: #ddd;
   border: 1px solid rgba(58, 58, 58, 0.527);
-  border-radius: 6px;
+  border-radius: 10px;
   margin-left: auto;
   margin-right: auto;
   overflow: hidden;
@@ -99,6 +129,7 @@ h1,h2,h3,h4 {
 .header {
   width:100%;
   height: 100px;
+  color: black;
   background-color: white;
   display: flex;
   flex-direction: row;
@@ -106,9 +137,9 @@ h1,h2,h3,h4 {
   justify-content: space-between;
 }
 .header .logo {
-  max-height: 50%;
-  margin-top: 25px;
-  margin-left: 20px;
+  max-height: 80%;
+  margin-top: 10px;
+  margin-left: 10px;
 }
 .header .header-right {
   color: #777;
@@ -135,10 +166,11 @@ h1,h2,h3,h4 {
 }
 .button {
   flex-grow: 1;
-  margin-left: 15px;
   align-items: center;
   height: 40px;
   text-align: center;
+  margin-left: 40px;
+  margin-right: 40px;
   width: 300px;
   background: #ee3a3d;
   border-radius: 4px;
@@ -146,15 +178,8 @@ h1,h2,h3,h4 {
   font-size: 1.5em;
   padding: 20px 20px 10px 20px;
   text-decoration: none;
-  transition: all 0.1s linear;
 }
-
-.button:hover {
-  background: #bd2225;
-}
-
 .button:focus, .submit {outline:0;}
-
 .number-display {
   flex-grow: 1;
   align-items: center;
@@ -170,25 +195,22 @@ h1,h2,h3,h4 {
   font-size: 2em;
   padding: 10px 20px;
 }
-
 .number-display p {
   margin: 0;
   padding: 0;
   padding-top: 10px;
 }
-
 input[type=text], select, textarea {
-  width: 100%;
-  padding: 25px 20px;
-  font-size: 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  margin-top: 6px;
-  margin-bottom: 40px;
-  resize: vertical;
+    width: 100%;
+    padding: 25px 20px;
+    font-size: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 40px;
+    resize: vertical;
 }
-
 input[type=submit], .submit {
   height: 70px;
   text-align: center;
@@ -200,13 +222,7 @@ input[type=submit], .submit {
   padding: 20px 20px 20px 20px;
   text-decoration: none;
   border: none;
-  transition: all 0.1s linear;
 }
-
-input[type=submit], .submit:hover {
-  background: #bd2225;
-}
-
 .form {
   max-width: 74%;
   margin-left: auto;

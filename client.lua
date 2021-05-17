@@ -24,7 +24,7 @@ end)
 -- Code
 
 -- Settings
-local depositAtATM = false -- Allows the player to deposit at an ATM rather than only in banks (Default: false)
+local depositAtATM = false -- Allows the player to deposit at an ATM rather than nby in banks (Default: false)
 local giveCashAnywhere = false -- Allows the player to give CASH to another player, no matter how far away they are. (Default: false)
 local withdrawAnywhere = false -- Allows the player to withdraw cash from bank account anywhere (Default: false)
 local depositAnywhere = false -- Allows the player to deposit cash into bank account anywhere (Default: false)
@@ -127,8 +127,8 @@ local banks = {
   [7] = {name="Bank", Closed = false, id=108, x = 241.727,   y = 220.706,   z = 106.286},
 }
 
-RegisterNetEvent('qb-banking:client:SetBankClosed')
-AddEventHandler('qb-banking:client:SetBankClosed', function(BankId, bool)
+RegisterNetEvent('ar-banking:client:SetBankClosed')
+AddEventHandler('ar-banking:client:SetBankClosed', function(BankId, bool)
   banks[BankId].Closed = bool
 end)
 
@@ -172,7 +172,7 @@ function openGui()
   local playerPed = GetPlayerPed(-1)
   local PlayerData = QBCore.Functions.GetPlayerData()
   TaskStartScenarioInPlace(playerPed, "PROP_HUMAN_ATM", 0, true)
-  QBCore.Functions.Progressbar("use_bank", "Card is being read..", 2500, false, true, {}, {}, {}, {}, function() -- Done
+  QBCore.Functions.Progressbar("use_bank", "Reading card.", 2500, false, true, {}, {}, {}, {}, function() -- Done
       ClearPedTasksImmediately(ped)
       SetNuiFocus(true, true)
       SendNUIMessage({
@@ -181,7 +181,7 @@ function openGui()
       })
   end, function() -- Cancel
       ClearPedTasksImmediately(ped)
-      QBCore.Functions.Notify("Canceled..", "error")
+      QBCore.Functions.Notify("Canceled.", "error")
   end)
 end
 
@@ -222,7 +222,7 @@ Citizen.CreateThread(function()
           inRange = true
           if not banks[bankkey].Closed then
             DrawMarker(2, banks[bankkey].x, banks[bankkey].y, banks[bankkey].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.1, 55, 255, 55, 255, 0, 0, 0, 1, 0, 0, 0)
-            DrawText3Ds(banks[bankkey].x, banks[bankkey].y, banks[bankkey].z + 0.3, '[E] Validate card')
+            DrawText3Ds(banks[bankkey].x, banks[bankkey].y, banks[bankkey].z + 0.3, '[E] Use bank')
             if IsControlJustPressed(1, Keys["E"])  then
                 if (not IsInVehicle()) then
                     if bankOpen then
@@ -241,7 +241,7 @@ Citizen.CreateThread(function()
         elseif IsNearATM() then
           atBank = true
           inRange = true
-          DrawText3Ds(pos.x, pos.y, pos.z, '[E] Validate card')
+          DrawText3Ds(pos.x, pos.y, pos.z, '[E] Use bank')
           if IsControlJustPressed(1, Keys["E"])  then
               if (not IsInVehicle()) then
                   if bankOpen then
@@ -285,8 +285,28 @@ RegisterNUICallback('close', function(data, cb)
 end)
 
 RegisterNUICallback('balance', function(data, cb)
+  TriggerServerEvent('bank:balance')
   SendNUIMessage({openSection = "balance"})
   cb('ok')
+end)
+
+RegisterNetEvent('banking:updateBalance')
+AddEventHandler('banking:updateBalance', function(balance2, show)
+  local id = PlayerId()
+  local playerName = GetPlayerName(id)
+	SendNUIMessage({
+		updateBalance = true,
+		balance = tonumber(balance2),
+    player = playerName,
+    show = show
+	})
+end)
+
+RegisterNetEvent("banking:viewBalance")
+AddEventHandler("banking:viewBalance", function()
+  SendNUIMessage({
+    viewBalance = true
+  })
 end)
 
 RegisterNUICallback('withdraw', function(data, cb)
@@ -299,6 +319,11 @@ RegisterNUICallback('deposit', function(data, cb)
   cb('ok')
 end)
 
+RegisterNUICallback('transfer', function(data, cb)
+  SendNUIMessage({openSection = "transfer"})
+  cb('ok')
+end)
+
 RegisterNUICallback('withdrawSubmit', function(data, cb)
   TriggerServerEvent('bank:withdraw', data.amount)
   SetTimeout(500, function()
@@ -308,6 +333,12 @@ RegisterNUICallback('withdrawSubmit', function(data, cb)
       PlayerData = PlayerData
     })
   end)
+  cb('ok')
+end)
+
+RegisterNUICallback('quickCash', function(data, cb)
+  local cemzao = 100
+  TriggerServerEvent('bank:withdraw', cemzao)
   cb('ok')
 end)
 
@@ -325,8 +356,21 @@ end)
 
 RegisterNUICallback('transferSubmit', function(data, cb)
   local fromPlayer = GetPlayerServerId();
-  TriggerEvent('bank:transfer', tonumber(fromPlayer), tonumber(data.transferid), tonumber(data.amount))
+  TriggerEvent('bank:transfer', tonumber(fromPlayer), tonumber(data.toPlayer), tonumber(data.amount))
   cb('ok')
+end)
+
+
+RegisterNetEvent('bank:transfer')
+AddEventHandler('bank:transfer', function(fromPlayer, toPlayer, amount)
+  local player2 = GetPlayerFromServerId(toPlayer)
+  local playing = IsPlayerPlaying(player2)
+  if (playing ~= false) then
+    TriggerServerEvent("bank:transfer", toPlayer, tonumber(amount))
+  else
+    TriggerEvent('chatMessage', "SYSTEM", "error", "This citizen is not in the city.")
+  end
+  TriggerServerEvent('bank:balance')
 end)
 
 -- Check if player is near an atm
@@ -338,7 +382,7 @@ function IsNearATM()
     local objCoords = GetEntityCoords(closestObj)
     if closestObj ~= 0 then
       local dist = GetDistanceBetweenCoords(plyCoords.x, plyCoords.y, plyCoords.z, objCoords.x, objCoords.y, objCoords.z, true)
-      if dist <= 2 then
+      if dist <= 1.5 then
         return true
       end
     end
@@ -410,6 +454,6 @@ AddEventHandler('banking:client:CheckDistance', function(targetId, amount)
       TriggerServerEvent('banking:server:giveCash', playerId, amount)
     end
   else
-    QBCore.Functions.Notify('You are not nearby the person..', 'error')
+    QBCore.Functions.Notify('You are not close to the person.', 'error')
   end
 end)
